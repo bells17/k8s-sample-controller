@@ -1,0 +1,16 @@
+domain: bells17.io
+layout:
+- go.kubebuilder.io/v3
+projectName: k8s-sample-controller
+repo: github.com/bells17/k8s-sample-controller
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: bells17.io
+  group: limit
+  kind: SSL
+  path: github.com/bells17/k8s-sample-controller/api/v1beta1
+  version: v1beta1
+version: "3"

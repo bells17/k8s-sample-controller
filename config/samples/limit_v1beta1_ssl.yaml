@@ -1,0 +1,7 @@
+apiVersion: limit.bells17.io/v1beta1
+kind: SSL
+metadata:
+  name: ssl-sample
+spec:
+  # Add fields here
+  secretName: ssl-sample
