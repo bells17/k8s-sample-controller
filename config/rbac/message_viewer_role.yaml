@@ -1,20 +1,20 @@
-# permissions for end users to view ssls.
+# permissions for end users to view messages.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ssl-viewer-role
+  name: message-viewer-role
 rules:
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls
+  - messages
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls/status
+  - messages/status
   verbs:
   - get

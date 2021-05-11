@@ -1,13 +1,13 @@
-# permissions for end users to edit ssls.
+# permissions for end users to edit messages.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ssl-editor-role
+  name: message-editor-role
 rules:
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls
+  - messages
   verbs:
   - create
   - delete
@@ -17,8 +17,8 @@ rules:
   - update
   - watch
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls/status
+  - messages/status
   verbs:
   - get

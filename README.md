@@ -1,5 +1,38 @@
 # k8s-sample-controller
 
+## デプロイ(kind)
+
+```
+$ make setup
+$ make launch-kind
+$ make load-image
+$ make deploy
+```
+
+### サンプルのデプロイ
+
+```
+$ kubectl apply -f config/samples/hello_v1beta1_message.yaml
+```
+
+確認
+
+```
+$ kubectl get -f config/samples/hello_v1beta1_message.yaml
+NAME             HELLOMESSAGE
+message-sample   Hello bar
+```
+
+## テスト
+
+```
+$ make setup
+$ make launch-kind
+$ make load-image
+$ make deploy
+$ make e2e
+```
+
 ## 作業手順
 
 ### 事前準備
@@ -55,50 +88,72 @@ ARCH=amd64
 OS=$(shell go env GOOS)
 
 .PHONY: setup
-setup: api controllers bin tmp
+setup: $(shell pwd)/api $(shell pwd)/controllers $(shell pwd)/bin $(shell pwd)/tmp ginkgo kind kubectl
 
-api:
-	@mkdir api
+$(shell pwd)/api:
+	@mkdir $(shell pwd)/api
 
-controllers:
-	@mkdir controllers
+$(shell pwd)/controllers:
+	@mkdir $(shell pwd)/controllers
 
-bin:
-	@mkdir bin
+$(shell pwd)/bin:
+	@mkdir $(shell pwd)/bin
 
-tmp:
-	@mkdir tmp
+$(shell pwd)/tmp:
+	@mkdir $(shell pwd)/tmp
 
-$(IMAGE).img: docker-build
-	docker save -o $@ ${IMAGE}
+.PHONY: ginkgo
+ginkgo:
+	$(call go-get-tool,bin/ginkgo,github.com/onsi/ginkgo/ginkgo@v1.14.1)
 
 .PHONY: kind
 kind:
-	if [ ! -f bin/kind ] || [ $$(bin/kind version | awk '{print $$2}') != "v$(KIND_VERSION)" ]; then \
+	if [ ! -f $(shell pwd)/bin/kind ] || [ $$($(shell pwd)/bin/kind version | awk '{print $$2}') != "v$(KIND_VERSION)" ]; then \
 		echo "downloading kind: v$(KIND_VERSION)"; \
-		curl -o bin/kind -sfL https://kind.sigs.k8s.io/dl/v$(KIND_VERSION)/kind-$(OS)-$(ARCH) \
-		&& chmod a+x bin/kind; \
+		curl -o $(shell pwd)/bin/kind -sfL https://kind.sigs.k8s.io/dl/v$(KIND_VERSION)/kind-$(OS)-$(ARCH) \
+		&& chmod a+x $(shell pwd)/bin/kind; \
 	fi
 
+.PHONY: kubectl
+kubectl:
+	@if [ ! -f /usr/local/bin/kubectl ] || [ $$(/usr/local/bin/kubectl version --client=true --short=true | awk '{print $$3}') != "v$(KUBERNETES_VERSION)" ]; then \
+		echo "downloading kubectl: v$(KUBERNETES_VERSION)"; \
+		curl -o /usr/local/bin/kubectl -sfL https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/$(OS)/$(ARCH)/kubectl && chmod a+x /usr/local/bin/kubectl; \
+	fi
+
+$(IMAGE).img: docker-build
+	docker save -o $@ ${IMG}
+
 .PHONY: launch-kind
-launch-kind:
+launch-kind: shutdown-kind
 	sed -e "s|@KUBERNETES_VERSION@|$(KUBERNETES_VERSION)|" \
 		-e "s|@KUBEADM_APIVERSION@|$(KUBEADM_APIVERSION)|" \
-		kind-config.yaml > tmp/kind-config.yaml
-	bin/kind create cluster \
+		kind-config.yaml > $(shell pwd)/tmp/kind-config.yaml
+	$(shell pwd)/bin/kind create cluster \
 		--name=$(CLUSTER_NAME)\
-		--config tmp/kind-config.yaml \
+		--config $(shell pwd)/tmp/kind-config.yaml \
 		--image kindest/node:v$(KUBERNETES_VERSION)
 
 .PHONY: load-image
 load-image:
 	rm -f $(IMAGE).img
 	$(MAKE) $(IMAGE).img
-	bin/kind load image-archive --name=$(CLUSTER_NAME) $(IMAGE).img
+	$(shell pwd)/bin/kind load image-archive --name=$(CLUSTER_NAME) $(IMAGE).img
 
 .PHONY: shutdown-kind
 shutdown-kind:
-	bin/kind delete cluster --name=$(CLUSTER_NAME) || true
+	$(shell pwd)/bin/kind delete cluster --name=$(CLUSTER_NAME) || true
+
+.PHONY: e2e
+e2e:
+	kubectl -n k8s-sample-controller-system wait deploy k8s-sample-controller-controller-manager --for condition=Progressing
+	kubectl create ns test || true
+	E2E=true $(shell pwd)/bin/ginkgo -timeout=1h --failFast -v controllers/
+	kubectl delete ns test || true
+
+.PHONY: clean
+clean: shutdown-kind
+	rm -fr $(IMAGE).img $(shell pwd)/bin $(shell pwd)/tmp
 
 EOS
 
@@ -121,3 +176,5 @@ EOS
 - 開発する
 - `kind load-image` でビルドしたイメージをkindに読み込み
 - `make deploy` でマニフェストをデプロイする
+
+π

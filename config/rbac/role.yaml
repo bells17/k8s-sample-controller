@@ -7,25 +7,9 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - ""
+  - hello.bells17.io
   resources:
-  - namespaces
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - limit.bells17.io
-  resources:
-  - ssls
+  - messages
   verbs:
   - create
   - delete
@@ -35,15 +19,15 @@ rules:
   - update
   - watch
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls/finalizers
+  - messages/finalizers
   verbs:
   - update
 - apiGroups:
-  - limit.bells17.io
+  - hello.bells17.io
   resources:
-  - ssls/status
+  - messages/status
   verbs:
   - get
   - patch

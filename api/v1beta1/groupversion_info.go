@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1beta1 contains API Schema definitions for the limit v1beta1 API group
+// Package v1beta1 contains API Schema definitions for the hello v1beta1 API group
 //+kubebuilder:object:generate=true
-//+groupName=limit.bells17.io
+//+groupName=hello.bells17.io
 package v1beta1
 
 import (
@@ -26,7 +26,7 @@ import (
 
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "limit.bells17.io", Version: "v1beta1"}
+	GroupVersion = schema.GroupVersion{Group: "hello.bells17.io", Version: "v1beta1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

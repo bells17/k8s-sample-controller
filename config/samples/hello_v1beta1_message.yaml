@@ -1,0 +1,6 @@
+apiVersion: hello.bells17.io/v1beta1
+kind: Message
+metadata:
+  name: message-sample
+spec:
+  message: bar
